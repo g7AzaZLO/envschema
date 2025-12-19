@@ -8,7 +8,7 @@
 
 **Type-safe environment variables with automatic validation and documentation generation**
 
-[Documentation](#documentation) | [Installation](#installation) | [Quick Start](#quick-start) | [Examples](#examples) | [Читать на русском](README_RU.md)
+[Documentation](#documentation) | [Installation](#installation) | [Quick Start](#quick-start) | [Examples](#examples) | [Читать на русском](README_ru.md)
 
 </div>
 
