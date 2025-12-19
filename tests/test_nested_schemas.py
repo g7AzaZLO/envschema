@@ -4,7 +4,7 @@ from envschema import EnvSchema, EnvSchemaError, Field
 
 
 class DatabaseSettings(EnvSchema):
-    """Настройки базы данных."""
+    """Database settings."""
 
     host: str = "localhost"
     port: int = 5432
@@ -13,7 +13,7 @@ class DatabaseSettings(EnvSchema):
 
 
 class RedisSettings(EnvSchema):
-    """Настройки Redis."""
+    """Redis settings."""
 
     host: str = "localhost"
     port: int = 6379
@@ -21,7 +21,7 @@ class RedisSettings(EnvSchema):
 
 
 class S3Settings(EnvSchema):
-    """Настройки S3."""
+    """S3 settings."""
 
     bucket: str
     region: str = "us-east-1"
@@ -29,7 +29,7 @@ class S3Settings(EnvSchema):
 
 
 def test_nested_schema_basic() -> None:
-    """Тест базовой загрузки вложенной схемы."""
+    """Test basic nested schema loading."""
 
     class Settings(EnvSchema):
         db: DatabaseSettings = Field(prefix="DB_")
@@ -54,7 +54,7 @@ def test_nested_schema_basic() -> None:
 
 
 def test_nested_schema_default_prefix() -> None:
-    """Тест автоматического префикса (FIELD_NAME_)."""
+    """Test automatic prefix (FIELD_NAME_)."""
 
     class Settings(EnvSchema):
         redis: RedisSettings
@@ -76,7 +76,7 @@ def test_nested_schema_default_prefix() -> None:
 
 
 def test_nested_schema_multiple_nested() -> None:
-    """Тест нескольких вложенных схем."""
+    """Test multiple nested schemas."""
 
     class Settings(EnvSchema):
         db: DatabaseSettings = Field(prefix="DB_")
@@ -107,7 +107,7 @@ def test_nested_schema_multiple_nested() -> None:
 
 
 def test_nested_schema_with_defaults() -> None:
-    """Тест дефолтных значений во вложенных схемах."""
+    """Test default values in nested schemas."""
 
     class Settings(EnvSchema):
         db: DatabaseSettings = Field(prefix="DB_")
@@ -125,7 +125,7 @@ def test_nested_schema_with_defaults() -> None:
 
 
 def test_nested_schema_missing_required_field() -> None:
-    """Тест отсутствия обязательного поля во вложенной схеме."""
+    """Test missing required field in nested schema."""
 
     class Settings(EnvSchema):
         db: DatabaseSettings = Field(prefix="DB_")
@@ -139,14 +139,13 @@ def test_nested_schema_missing_required_field() -> None:
 
     error = exc_info.value
     assert len(error.errors) == 1
-    # Проверяем, что ошибка связана с DB_NAME
     env_vars = {e.env_var for e in error.errors}
     assert "DB_NAME" in env_vars
     assert any("missing required" in e.message for e in error.errors)
 
 
 def test_nested_schema_multiple_errors() -> None:
-    """Тест агрегации ошибок из вложенных схем."""
+    """Test error aggregation from nested schemas."""
 
     class Settings(EnvSchema):
         db: DatabaseSettings = Field(prefix="DB_")
@@ -169,7 +168,7 @@ def test_nested_schema_multiple_errors() -> None:
 
 
 def test_nested_schema_deep_nesting() -> None:
-    """Тест глубокой вложенности схем."""
+    """Test deep schema nesting."""
 
     class InnerSettings(EnvSchema):
         value: str
@@ -190,7 +189,7 @@ def test_nested_schema_deep_nesting() -> None:
 
 
 def test_nested_schema_prefix_composition() -> None:
-    """Тест композиции префиксов."""
+    """Test prefix composition."""
 
     class Settings(EnvSchema):
         db: DatabaseSettings = Field(prefix="DB_")
@@ -209,7 +208,7 @@ def test_nested_schema_prefix_composition() -> None:
 
 
 def test_nested_schema_with_parent_prefix() -> None:
-    """Тест префикса родительской схемы."""
+    """Test parent schema prefix."""
 
     class Settings(EnvSchema):
         db: DatabaseSettings = Field(prefix="DATABASE_")
@@ -230,7 +229,7 @@ def test_nested_schema_with_parent_prefix() -> None:
 
 
 def test_nested_schema_custom_env_names() -> None:
-    """Тест кастомных имен переменных во вложенных схемах."""
+    """Test custom variable names in nested schemas."""
 
     class CustomDB(EnvSchema):
         host: str = Field(env="DB_HOSTNAME")
@@ -253,7 +252,7 @@ def test_nested_schema_custom_env_names() -> None:
 
 
 def test_nested_schema_repr() -> None:
-    """Тест строкового представления вложенных схем."""
+    """Test string representation of nested schemas."""
 
     class Settings(EnvSchema):
         db: DatabaseSettings = Field(prefix="DB_")
@@ -278,7 +277,7 @@ def test_nested_schema_repr() -> None:
 
 
 def test_nested_schema_mixed_fields() -> None:
-    """Тест смешанных полей (обычные + вложенные)."""
+    """Test mixed fields (regular + nested)."""
 
     class Settings(EnvSchema):
         app_name: str

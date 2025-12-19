@@ -2,7 +2,7 @@ from envschema import EnvSchema, Field
 
 
 class DatabaseSettings(EnvSchema):
-    """Настройки базы данных."""
+    """Database settings."""
 
     host: str
     port: int = 5432
@@ -11,7 +11,7 @@ class DatabaseSettings(EnvSchema):
 
 
 class Settings(EnvSchema):
-    """Основная схема приложения."""
+    """Main application schema."""
 
     debug: bool = False
     db: DatabaseSettings = Field(prefix="DB_")

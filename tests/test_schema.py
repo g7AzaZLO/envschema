@@ -7,10 +7,10 @@ from envschema.errors import EnvSchemaError
 
 
 class TestEnvSchema:
-    """Тесты для EnvSchema."""
+    """Tests for EnvSchema."""
 
     def test_simple_schema(self) -> None:
-        """Проверяет простую схему с обязательными полями."""
+        """Checks simple schema with required fields."""
 
         class Settings(EnvSchema):
             port: int
@@ -23,7 +23,7 @@ class TestEnvSchema:
         assert settings.host == "localhost"
 
     def test_schema_with_defaults(self) -> None:
-        """Проверяет схему со значениями по умолчанию."""
+        """Checks schema with default values."""
 
         class Settings(EnvSchema):
             port: int = 3000
@@ -38,7 +38,7 @@ class TestEnvSchema:
         assert settings.host == "localhost"
 
     def test_schema_with_field_descriptors(self) -> None:
-        """Проверяет схему с Field дескрипторами."""
+        """Checks schema with Field descriptors."""
 
         class Settings(EnvSchema):
             port: int = Field(default=3000)
@@ -53,7 +53,7 @@ class TestEnvSchema:
         assert settings.debug is False
 
     def test_missing_required_field(self) -> None:
-        """Проверяет ошибку при отсутствии обязательного поля."""
+        """Checks error when required field is missing."""
 
         class Settings(EnvSchema):
             port: int
@@ -70,7 +70,7 @@ class TestEnvSchema:
         assert "missing required" in error.errors[0].message
 
     def test_invalid_type(self) -> None:
-        """Проверяет ошибку при невалидном типе."""
+        """Checks error on invalid type."""
 
         class Settings(EnvSchema):
             port: int
@@ -85,7 +85,7 @@ class TestEnvSchema:
         assert error.errors[0].field_name == "port"
 
     def test_multiple_errors(self) -> None:
-        """Проверяет множественные ошибки валидации."""
+        """Checks multiple validation errors."""
 
         class Settings(EnvSchema):
             port: int
@@ -101,7 +101,7 @@ class TestEnvSchema:
         assert len(error.errors) >= 2
 
     def test_list_type(self) -> None:
-        """Проверяет работу со списками."""
+        """Checks working with lists."""
 
         class Settings(EnvSchema):
             hosts: list[str]
@@ -117,7 +117,7 @@ class TestEnvSchema:
         assert settings.ports == [8080, 9090, 3000]
 
     def test_prefix(self) -> None:
-        """Проверяет работу с префиксом."""
+        """Checks working with prefix."""
 
         class Settings(EnvSchema):
             port: int
@@ -130,7 +130,7 @@ class TestEnvSchema:
         assert settings.host == "localhost"
 
     def test_custom_env_name_with_prefix(self) -> None:
-        """Проверяет кастомное имя переменной с префиксом."""
+        """Checks custom variable name with prefix."""
 
         class Settings(EnvSchema):
             api_key: str = Field(env="SECRET_KEY")
@@ -141,7 +141,7 @@ class TestEnvSchema:
         assert settings.api_key == "secret123"
 
     def test_load_from_os_environ(self) -> None:
-        """Проверяет загрузку из os.environ."""
+        """Checks loading from os.environ."""
 
         class Settings(EnvSchema):
             test_var: str
@@ -154,7 +154,7 @@ class TestEnvSchema:
             os.environ.pop("TEST_VAR", None)
 
     def test_repr(self) -> None:
-        """Проверяет строковое представление схемы."""
+        """Checks string representation of schema."""
 
         class Settings(EnvSchema):
             port: int
@@ -169,7 +169,7 @@ class TestEnvSchema:
         assert "host='localhost'" in repr_str
 
     def test_init_with_values(self) -> None:
-        """Проверяет инициализацию с явными значениями."""
+        """Checks initialization with explicit values."""
 
         class Settings(EnvSchema):
             port: int
@@ -181,7 +181,7 @@ class TestEnvSchema:
         assert settings.host == "localhost"
 
     def test_bool_values(self) -> None:
-        """Проверяет работу с булевыми значениями."""
+        """Checks working with boolean values."""
 
         class Settings(EnvSchema):
             debug: bool
@@ -200,7 +200,7 @@ class TestEnvSchema:
         assert settings.enabled is False
 
     def test_float_values(self) -> None:
-        """Проверяет работу с числами с плавающей точкой."""
+        """Checks working with float values."""
 
         class Settings(EnvSchema):
             ratio: float
@@ -213,7 +213,7 @@ class TestEnvSchema:
         assert settings.price == 99.99
 
     def test_dict_type(self) -> None:
-        """Проверяет работу со словарями."""
+        """Checks working with dictionaries."""
 
         class Settings(EnvSchema):
             config: dict

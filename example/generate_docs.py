@@ -3,7 +3,7 @@ from envschema.docs import DocumentationGenerator
 
 
 class Settings(EnvSchema):
-    """Схема для генерации документации."""
+    """Schema for documentation generation."""
 
     host: str = "localhost"
     port: int

@@ -13,26 +13,26 @@ from envschema.casters import (
 
 
 class TestCastStr:
-    """Тесты для cast_str."""
+    """Tests for cast_str."""
 
     def test_returns_string_as_is(self) -> None:
-        """Проверяет, что строка возвращается без изменений."""
+        """Checks that string is returned unchanged."""
         assert cast_str("hello") == "hello"
         assert cast_str("123") == "123"
         assert cast_str("") == ""
 
 
 class TestCastInt:
-    """Тесты для cast_int."""
+    """Tests for cast_int."""
 
     def test_valid_integer(self) -> None:
-        """Проверяет кастинг валидных целых чисел."""
+        """Checks casting of valid integers."""
         assert cast_int("123") == 123
         assert cast_int("0") == 0
         assert cast_int("-42") == -42
 
     def test_invalid_integer(self) -> None:
-        """Проверяет ошибку при невалидном значении."""
+        """Checks error on invalid value."""
         with pytest.raises(ValueError, match="cannot cast 'abc' to int"):
             cast_int("abc")
 
@@ -41,26 +41,26 @@ class TestCastInt:
 
 
 class TestCastFloat:
-    """Тесты для cast_float."""
+    """Tests for cast_float."""
 
     def test_valid_float(self) -> None:
-        """Проверяет кастинг валидных чисел с плавающей точкой."""
+        """Checks casting of valid floats."""
         assert cast_float("123.5") == 123.5
         assert cast_float("0.0") == 0.0
         assert cast_float("-42.7") == -42.7
         assert cast_float("123") == 123.0
 
     def test_invalid_float(self) -> None:
-        """Проверяет ошибку при невалидном значении."""
+        """Checks error on invalid value."""
         with pytest.raises(ValueError, match="cannot cast 'abc' to float"):
             cast_float("abc")
 
 
 class TestCastBool:
-    """Тесты для cast_bool."""
+    """Tests for cast_bool."""
 
     def test_true_values(self) -> None:
-        """Проверяет кастинг значений True."""
+        """Checks casting of True values."""
         assert cast_bool("true") is True
         assert cast_bool("True") is True
         assert cast_bool("TRUE") is True
@@ -71,7 +71,7 @@ class TestCastBool:
         assert cast_bool("ON") is True
 
     def test_false_values(self) -> None:
-        """Проверяет кастинг значений False."""
+        """Checks casting of False values."""
         assert cast_bool("false") is False
         assert cast_bool("False") is False
         assert cast_bool("FALSE") is False
@@ -82,7 +82,7 @@ class TestCastBool:
         assert cast_bool("OFF") is False
 
     def test_invalid_bool(self) -> None:
-        """Проверяет ошибку при невалидном значении."""
+        """Checks error on invalid value."""
         with pytest.raises(ValueError, match="invalid boolean value 'maybe'"):
             cast_bool("maybe")
 
@@ -91,75 +91,75 @@ class TestCastBool:
 
 
 class TestCastList:
-    """Тесты для cast_list."""
+    """Tests for cast_list."""
 
     def test_json_array_string_list(self) -> None:
-        """Проверяет парсинг JSON массива строк."""
+        """Checks parsing of JSON string array."""
         result = cast_list('["a", "b", "c"]')
         assert result == ["a", "b", "c"]
 
     def test_json_array_int_list(self) -> None:
-        """Проверяет парсинг JSON массива чисел."""
+        """Checks parsing of JSON number array."""
         result = cast_list("[1, 2, 3]", item_type=int)
         assert result == [1, 2, 3]
 
     def test_csv_string_list(self) -> None:
-        """Проверяет парсинг CSV строки."""
+        """Checks parsing of CSV string."""
         result = cast_list("a,b,c")
         assert result == ["a", "b", "c"]
 
     def test_csv_int_list(self) -> None:
-        """Проверяет парсинг CSV строки с кастингом в int."""
+        """Checks parsing of CSV string with int casting."""
         result = cast_list("1,2,3", item_type=int)
         assert result == [1, 2, 3]
 
     def test_empty_list(self) -> None:
-        """Проверяет обработку пустого списка."""
+        """Checks handling of empty list."""
         assert cast_list("") == []
         assert cast_list("[]") == []
 
     def test_invalid_json_array(self) -> None:
-        """Проверяет ошибку при невалидном JSON."""
+        """Checks error on invalid JSON."""
         with pytest.raises(ValueError, match="invalid JSON array"):
             cast_list("[invalid json]")
 
     def test_invalid_list_items(self) -> None:
-        """Проверяет ошибку при невалидных элементах списка."""
+        """Checks error on invalid list items."""
         with pytest.raises(ValueError, match="cannot cast list items to int"):
             cast_list("1,abc,3", item_type=int)
 
 
 class TestCastDict:
-    """Тесты для cast_dict."""
+    """Tests for cast_dict."""
 
     def test_valid_json_object(self) -> None:
-        """Проверяет парсинг валидного JSON объекта."""
+        """Checks parsing of valid JSON object."""
         result = cast_dict('{"key": "value", "num": 42}')
         assert result == {"key": "value", "num": 42}
 
     def test_invalid_json_object(self) -> None:
-        """Проверяет ошибку при невалидном JSON."""
+        """Checks error on invalid JSON."""
         with pytest.raises(ValueError, match="invalid JSON object"):
             cast_dict("{invalid json")
 
     def test_not_a_dict(self) -> None:
-        """Проверяет ошибку, если JSON не объект."""
+        """Checks error if JSON is not an object."""
         with pytest.raises(ValueError, match="expected JSON object"):
             cast_dict('["array", "not", "object"]')
 
 
 class TestCastValue:
-    """Тесты для cast_value."""
+    """Tests for cast_value."""
 
     def test_basic_types(self) -> None:
-        """Проверяет кастинг базовых типов."""
+        """Checks casting of basic types."""
         assert cast_value("123", int) == 123
         assert cast_value("45.6", float) == 45.6
         assert cast_value("hello", str) == "hello"
         assert cast_value("true", bool) is True
 
     def test_list_type(self) -> None:
-        """Проверяет кастинг списков."""
+        """Checks casting of lists."""
         result = cast_value("1,2,3", list[int])
         assert result == [1, 2, 3]
 
@@ -167,16 +167,16 @@ class TestCastValue:
         assert result == ["a", "b"]
 
     def test_unknown_type(self) -> None:
-        """Проверяет ошибку для неизвестного типа."""
+        """Checks error for unknown type."""
         with pytest.raises(ValueError, match="no caster registered"):
             cast_value("value", tuple)  # type: ignore[arg-type]
 
 
 class TestRegisterCaster:
-    """Тесты для register_caster."""
+    """Tests for register_caster."""
 
     def test_register_custom_caster(self) -> None:
-        """Проверяет регистрацию кастомного кастера."""
+        """Checks registration of custom caster."""
 
         def cast_uppercase(value: str) -> str:
             return value.upper()
@@ -185,7 +185,6 @@ class TestRegisterCaster:
         result = cast_value("hello", str)
         assert result == "HELLO"
 
-        # Восстанавливаем оригинальный кастер
         from envschema.casters import cast_str
 
         register_caster(str, cast_str)

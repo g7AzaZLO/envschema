@@ -8,9 +8,9 @@ from .loader import load_env_with_dotenv
 
 
 class EnvSchemaMeta(type):
-    """Метакласс для EnvSchema.
+    """Metaclass for EnvSchema.
 
-    Обрабатывает аннотации типов и создает Field дескрипторы.
+    Processes type annotations and creates Field descriptors.
     """
 
     def __new__(
@@ -20,41 +20,34 @@ class EnvSchemaMeta(type):
         namespace: dict[str, Any],
         **kwargs: Any,
     ) -> type:
-        """Создает новый класс схемы.
+        """Creates new schema class.
 
         Args:
-            name: Имя класса
-            bases: Базовые классы
-            namespace: Пространство имен класса
-            **kwargs: Дополнительные аргументы
+            name: Class name
+            bases: Base classes
+            namespace: Class namespace
+            **kwargs: Additional arguments
 
         Returns:
-            Новый класс схемы
+            New schema class
         """
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
 
-        # Не обрабатываем базовый класс EnvSchema
         if name == "EnvSchema":
             return cls
 
-        # Получаем аннотации типов
         annotations = namespace.get("__annotations__", {})
 
-        # Обрабатываем каждое поле
         for field_name, _field_type in annotations.items():
-            # Проверяем, есть ли уже Field дескриптор
             field_value = namespace.get(field_name, _MISSING)
 
             if isinstance(field_value, Field):
-                # Уже Field — вызываем __set_name__ если не был вызван
                 field_value.__set_name__(cls, field_name)
             elif field_value is not _MISSING:
-                # Простое значение по умолчанию → создаем Field
                 field_obj = field_from_default(field_value)
                 field_obj.__set_name__(cls, field_name)
                 setattr(cls, field_name, field_obj)
             else:
-                # Обязательное поле без значения → создаем Field без default
                 field_obj = Field()
                 field_obj.__set_name__(cls, field_name)
                 setattr(cls, field_name, field_obj)
@@ -63,9 +56,9 @@ class EnvSchemaMeta(type):
 
 
 class EnvSchema(metaclass=EnvSchemaMeta):
-    """Базовый класс для схем переменных окружения.
+    """Base class for environment variable schemas.
 
-    Пример использования:
+    Usage example:
         >>> class Settings(EnvSchema):
         ...     port: int
         ...     debug: bool = False
@@ -74,20 +67,20 @@ class EnvSchema(metaclass=EnvSchemaMeta):
     """
 
     def __init__(self, **values: Any) -> None:
-        """Инициализирует экземпляр схемы с значениями.
+        """Initializes schema instance with values.
 
         Args:
-            **values: Значения полей
+            **values: Field values
         """
         for key, value in values.items():
             setattr(self, key, value)
 
     @classmethod
     def _get_fields(cls) -> dict[str, tuple[Field, type]]:
-        """Получает все поля схемы с их типами.
+        """Gets all schema fields with their types.
 
         Returns:
-            Словарь {имя_поля: (Field, тип)}
+            Dictionary {field_name: (Field, type)}
         """
         fields = {}
         type_hints = get_type_hints(cls)
@@ -103,13 +96,13 @@ class EnvSchema(metaclass=EnvSchemaMeta):
 
     @classmethod
     def _is_nested_schema(cls, field_type: type) -> bool:
-        """Проверяет, является ли тип вложенной схемой.
+        """Checks if type is nested schema.
 
         Args:
-            field_type: Тип поля
+            field_type: Field type
 
         Returns:
-            True если тип является подклассом EnvSchema
+            True if type is subclass of EnvSchema
         """
         try:
             return isinstance(field_type, type) and issubclass(field_type, EnvSchema)
@@ -124,26 +117,25 @@ class EnvSchema(metaclass=EnvSchemaMeta):
         dotenv_path: str | Path | bool | None = None,
         dotenv_override: bool = False,
     ) -> "EnvSchema":
-        """Загружает и валидирует схему из переменных окружения.
+        """Loads and validates schema from environment variables.
 
         Args:
-            env: Словарь переменных окружения (по умолчанию os.environ)
-            prefix: Префикс для всех переменных схемы
-            dotenv_path: Путь к .env файлу, True для автопоиска, None для игнора
-            dotenv_override: Если True, .env перезаписывает системные переменные
+            env: Dictionary of environment variables (default: os.environ)
+            prefix: Prefix for all schema variables
+            dotenv_path: Path to .env file, True for auto-search, None to ignore
+            dotenv_override: If True, .env overrides system variables
 
         Raises:
-            EnvSchemaError: Если валидация не прошла
-            ImportError: Если python-dotenv не установлен (if using dotenv_path)
-            FileNotFoundError: Если .env файл не найден
+            EnvSchemaError: If validation failed
+            ImportError: If python-dotenv is not installed (if using dotenv_path)
+            FileNotFoundError: If .env file not found
 
         Example:
-            >>> settings = Settings.load()  # Только os.environ
-            >>> settings = Settings.load(dotenv_path=".env")  # С .env файлом
-            >>> settings = Settings.load(dotenv_path=True)  # Автопоиск .env
+            >>> settings = Settings.load()  # Only os.environ
+            >>> settings = Settings.load(dotenv_path=".env")  # With .env file
+            >>> settings = Settings.load(dotenv_path=True)  # Auto-search .env
         """
         if env is None:
-            # Загружаем окружение с поддержкой .env файлов
             env = load_env_with_dotenv(dotenv_path, dotenv_override)
 
         fields = cls._get_fields()
@@ -164,7 +156,6 @@ class EnvSchema(metaclass=EnvSchemaMeta):
             except ValidationError as e:
                 errors.append(e)
             except EnvSchemaError as e:
-                # Агрегируем ошибки из вложенных схем
                 errors.extend(e.errors)
 
         if errors:
@@ -176,24 +167,21 @@ class EnvSchema(metaclass=EnvSchemaMeta):
     def _compute_nested_prefix(
         cls, field: Field, field_name: str, parent_prefix: str
     ) -> str:
-        """Вычисляет префикс для вложенной схемы.
+        """Computes prefix for nested schema.
 
         Args:
-            field: Дескриптор поля
-            field_name: Имя поля в схеме
-            parent_prefix: Префикс родительской схемы
+            field: Field descriptor
+            field_name: Field name in schema
+            parent_prefix: Parent schema prefix
 
         Returns:
-            Полный префикс для вложенной схемы
+            Full prefix for nested schema
         """
-        # Если указан кастомный префикс в Field(prefix="...")
         if field.prefix is not None:
             nested_prefix = field.prefix
         else:
-            # Используем имя поля в UPPER_CASE + "_"
             nested_prefix = f"{field_name.upper()}_"
 
-        # Добавляем родительский префикс
         if parent_prefix:
             return f"{parent_prefix}{nested_prefix}"
 
@@ -208,23 +196,22 @@ class EnvSchema(metaclass=EnvSchemaMeta):
         parent_prefix: str,
         env: dict[str, str],
     ) -> Any:
-        """Загружает и валидирует одно поле.
+        """Loads and validates single field.
 
         Args:
-            field: Дескриптор поля
-            field_name: Имя поля в схеме
-            field_type: Тип поля
-            parent_prefix: Префикс родительской схемы
-            env: Словарь переменных окружения
+            field: Field descriptor
+            field_name: Field name in schema
+            field_type: Field type
+            parent_prefix: Parent schema prefix
+            env: Dictionary of environment variables
 
         Returns:
-            Значение поля
+            Field value
 
         Raises:
-            ValidationError: Если валидация не прошла
-            EnvSchemaError: Если валидация вложенной схемы не прошла
+            ValidationError: If validation failed
+            EnvSchemaError: If nested schema validation failed
         """
-        # Проверяем, является ли поле вложенной схемой
         if cls._is_nested_schema(field_type):
             return cls._load_nested_schema(
                 field=field,
@@ -234,16 +221,13 @@ class EnvSchema(metaclass=EnvSchemaMeta):
                 env=env,
             )
 
-        # Обычное поле
         env_name = field.get_env_name(parent_prefix)
         raw_value = env.get(env_name)
 
-        # Проверяем наличие значения
         if raw_value is None:
             if field.has_default():
                 return field.get_default()
             elif is_optional_type(field_type):
-                # Optional[T] без значения → возвращаем None
                 return None
             else:
                 raise ValidationError(
@@ -253,7 +237,6 @@ class EnvSchema(metaclass=EnvSchemaMeta):
                     expected_type=_get_type_name(field_type),
                 )
 
-        # Кастим значение в нужный тип
         try:
             return cast_value(raw_value, field_type)
         except ValueError as e:
@@ -274,32 +257,30 @@ class EnvSchema(metaclass=EnvSchemaMeta):
         parent_prefix: str,
         env: dict[str, str],
     ) -> "EnvSchema":
-        """Загружает вложенную схему.
+        """Loads nested schema.
 
         Args:
-            field: Дескриптор поля
-            field_name: Имя поля в схеме
-            schema_type: Тип вложенной схемы
-            parent_prefix: Префикс родительской схемы
-            env: Словарь переменных окружения
+            field: Field descriptor
+            field_name: Field name in schema
+            schema_type: Nested schema type
+            parent_prefix: Parent schema prefix
+            env: Dictionary of environment variables
 
         Returns:
-            Экземпляр вложенной схемы
+            Nested schema instance
 
         Raises:
-            EnvSchemaError: Если валидация вложенной схемы не прошла
+            EnvSchemaError: If nested schema validation failed
         """
         nested_prefix = cls._compute_nested_prefix(field, field_name, parent_prefix)
 
-        # Рекурсивно загружаем вложенную схему
-        # EnvSchemaError пробросится наверх для агрегации ошибок
         return schema_type.load(env=env, prefix=nested_prefix)
 
     def __repr__(self) -> str:
-        """Возвращает строковое представление схемы.
+        """Returns string representation of schema.
 
         Returns:
-            Строковое представление для отладки
+            String representation for debugging
         """
         fields = self._get_fields()
         field_values = []
