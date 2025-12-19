@@ -1,35 +1,32 @@
-"""Примеры использования Optional типов."""
+"""Examples of Optional types usage."""
 
 from envschema import EnvSchema, Field
 
 
 def example_basic_optional() -> None:
-    """Базовый пример использования Optional."""
-    print("=== Пример 1: Базовое использование Optional ===\n")
+    """Basic example of Optional usage."""
+    print("=== Example 1: Basic Optional usage ===\n")
 
     class Settings(EnvSchema):
-        # Обязательное поле
         database_url: str
 
-        # Optional поля (могут отсутствовать)
         api_key: str | None
         cache_url: str | None
         redis_url: str | None
 
-    # Только обязательное поле
     env = {"DATABASE_URL": "postgres://localhost/mydb"}
 
     settings = Settings.load(env=env)
 
     print(f"Database URL: {settings.database_url}")
-    print(f"API Key: {settings.api_key}")  # None
-    print(f"Cache URL: {settings.cache_url}")  # None
-    print(f"Redis URL: {settings.redis_url}")  # None
+    print(f"API Key: {settings.api_key}")
+    print(f"Cache URL: {settings.cache_url}")
+    print(f"Redis URL: {settings.redis_url}")
 
 
 def example_optional_with_values() -> None:
-    """Пример Optional полей с предоставленными значениями."""
-    print("\n=== Пример 2: Optional с значениями ===\n")
+    """Example of Optional fields with provided values."""
+    print("\n=== Example 2: Optional with values ===\n")
 
     class Settings(EnvSchema):
         database_url: str
@@ -47,60 +44,53 @@ def example_optional_with_values() -> None:
     settings = Settings.load(env=env)
 
     print(f"Database URL: {settings.database_url}")
-    print(f"API Key: {settings.api_key}")  # secret_api_key_123
-    print(f"Cache TTL: {settings.cache_ttl}")  # 3600
-    print(f"Debug: {settings.debug}")  # True
+    print(f"API Key: {settings.api_key}")
+    print(f"Cache TTL: {settings.cache_ttl}")
+    print(f"Debug: {settings.debug}")
 
 
 def example_optional_vs_default() -> None:
-    """Пример разницы между Optional и дефолтными значениями."""
-    print("\n=== Пример 3: Optional vs Default ===\n")
+    """Example of difference between Optional and default values."""
+    print("\n=== Example 3: Optional vs Default ===\n")
 
     class Settings(EnvSchema):
-        # Optional: None если не указано
         api_key: str | None
 
-        # Default: всегда имеет значение
         timeout: int = 30
 
-        # Optional с дефолтом: может быть перезаписано
         retry_count: int | None = 3
 
-    env = {}  # Пустое окружение
+    env = {}
 
     settings = Settings.load(env=env)
 
-    print(f"API Key (Optional): {settings.api_key}")  # None
-    print(f"Timeout (Default): {settings.timeout}")  # 30
-    print(f"Retry Count (Optional + Default): {settings.retry_count}")  # 3
+    print(f"API Key (Optional): {settings.api_key}")
+    print(f"Timeout (Default): {settings.timeout}")
+    print(f"Retry Count (Optional + Default): {settings.retry_count}")
 
-    print("\nСемантика:")
-    print("- Optional[str]: 'может отсутствовать'")
-    print("- str с дефолтом: 'всегда имеет значение'")
-    print("- Optional[int] = 3: 'может быть перезаписано, иначе 3'")
+    print("\nSemantics:")
+    print("- Optional[str]: 'may be absent'")
+    print("- str with default: 'always has value'")
+    print("- Optional[int] = 3: 'may be overridden, otherwise 3'")
 
 
 def example_real_world_config() -> None:
-    """Реальный пример конфигурации приложения."""
-    print("\n=== Пример 4: Реальная конфигурация ===\n")
+    """Real-world application configuration example."""
+    print("\n=== Example 4: Real-world configuration ===\n")
 
     class Settings(EnvSchema):
-        # Обязательные настройки
         app_name: str
         database_url: str
         secret_key: str
 
-        # Опциональные интеграции
         sentry_dsn: str | None = Field(description="Sentry DSN for error tracking")
         slack_webhook: str | None = Field(description="Slack webhook for notifications")
         datadog_api_key: str | None = Field(description="Datadog API key for metrics")
 
-        # Опциональные настройки с дефолтами
         log_level: str = "INFO"
         workers: int = 4
         debug: bool = False
 
-        # Опциональные фичи
         enable_cache: bool | None = Field(description="Enable Redis caching")
         cache_ttl: int | None = Field(description="Cache TTL in seconds")
 
@@ -118,18 +108,18 @@ def example_real_world_config() -> None:
     print(f"App Name: {settings.app_name}")
     print(f"Database: {settings.database_url}")
     print(f"Log Level: {settings.log_level}")
-    print("\nИнтеграции:")
+    print("\nIntegrations:")
     print(f"  Sentry: {settings.sentry_dsn}")
     print(f"  Slack: {settings.slack_webhook or 'Not configured'}")
     print(f"  Datadog: {settings.datadog_api_key or 'Not configured'}")
-    print("\nКеширование:")
+    print("\nCaching:")
     print(f"  Enabled: {settings.enable_cache}")
     print(f"  TTL: {settings.cache_ttl or 'Default'}")
 
 
 def example_optional_third_party_services() -> None:
-    """Пример настройки опциональных сторонних сервисов."""
-    print("\n=== Пример 5: Опциональные сервисы ===\n")
+    """Example of configuring optional third-party services."""
+    print("\n=== Example 5: Optional services ===\n")
 
     class EmailSettings(EnvSchema):
         smtp_host: str
@@ -147,15 +137,12 @@ def example_optional_third_party_services() -> None:
     class Settings(EnvSchema):
         app_name: str
 
-        # Email опционален (можно использовать mock в разработке)
         email_enabled: bool | None
         email: EmailSettings | None = Field(prefix="EMAIL_")
 
-        # S3 опционален (можно использовать локальное хранилище)
         s3_enabled: bool | None
         s3: S3Settings | None = Field(prefix="S3_")
 
-    # Production: все сервисы включены
     prod_env = {
         "APP_NAME": "MyApp",
         "EMAIL_ENABLED": "true",
@@ -169,30 +156,28 @@ def example_optional_third_party_services() -> None:
         "S3_SECRET_KEY": "secret",
     }
 
-    # Development: все опционально
     dev_env = {"APP_NAME": "MyApp-Dev"}
 
-    print("Production настройки:")
+    print("Production settings:")
     prod_settings = Settings.load(env=prod_env)
     print(f"  Email enabled: {prod_settings.email_enabled}")
     print(f"  S3 enabled: {prod_settings.s3_enabled}")
 
-    print("\nDevelopment настройки:")
+    print("\nDevelopment settings:")
     dev_settings = Settings.load(env=dev_env)
     print(f"  Email enabled: {dev_settings.email_enabled}")
     print(f"  S3 enabled: {dev_settings.s3_enabled}")
-    print("  (используются моки/локальные сервисы)")
+    print("  (using mocks/local services)")
 
 
 def example_optional_type_hints() -> None:
-    """Пример использования разных синтаксисов Optional."""
-    print("\n=== Пример 6: Синтаксис Optional ===\n")
+    """Example of using different Optional syntaxes."""
+    print("\n=== Example 6: Optional syntax ===\n")
 
     class Settings(EnvSchema):
-        # Все эти объявления эквивалентны
-        field1: str | None  # Стандартный Optional
-        field2: str | None  # Union синтаксис
-        field3: str | None  # Python 3.10+ синтаксис
+        field1: str | None
+        field2: str | None
+        field3: str | None
 
     env = {}
 
@@ -201,12 +186,12 @@ def example_optional_type_hints() -> None:
     print(f"field1 (Optional[str]): {settings.field1}")
     print(f"field2 (Union[str, None]): {settings.field2}")
     print(f"field3 (str | None): {settings.field3}")
-    print("\nВсе три поля возвращают None")
+    print("\nAll three fields return None")
 
 
 def example_optional_validation() -> None:
-    """Пример валидации Optional полей."""
-    print("\n=== Пример 7: Валидация Optional ===\n")
+    """Example of Optional fields validation."""
+    print("\n=== Example 7: Optional validation ===\n")
 
     from envschema import EnvSchemaError
 
@@ -215,7 +200,6 @@ def example_optional_validation() -> None:
         timeout: float | None
         debug: bool | None
 
-    # Валидные значения
     valid_env = {
         "PORT": "8080",
         "TIMEOUT": "30.5",
@@ -223,50 +207,47 @@ def example_optional_validation() -> None:
     }
 
     settings = Settings.load(env=valid_env)
-    print("Валидные значения:")
+    print("Valid values:")
     print(f"  Port: {settings.port}")
     print(f"  Timeout: {settings.timeout}")
     print(f"  Debug: {settings.debug}")
 
-    # Невалидные значения
     invalid_env = {
         "PORT": "not_a_number",
         "TIMEOUT": "not_a_float",
     }
 
-    print("\nНевалидные значения:")
+    print("\nInvalid values:")
     try:
         Settings.load(env=invalid_env)
     except EnvSchemaError as e:
-        print(f"  Найдено ошибок: {len(e.errors)}")
+        print(f"  Found errors: {len(e.errors)}")
         for error in e.errors:
             print(f"    • {error.env_var}: {error.message}")
 
 
 def example_migration_guide() -> None:
-    """Пример миграции на Optional типы."""
-    print("\n=== Пример 8: Миграция на Optional ===\n")
+    """Example of migrating to Optional types."""
+    print("\n=== Example 8: Migration to Optional ===\n")
 
-    # Старый стиль (до Optional)
     class OldSettings(EnvSchema):
         api_key: str = Field(default=None)  # type: ignore
         timeout: int = Field(default=None)  # type: ignore
 
-    # Новый стиль (с Optional)
     class NewSettings(EnvSchema):
-        api_key: str | None  # Чисто и семантично
-        timeout: int | None  # Тип проверяется статически
+        api_key: str | None
+        timeout: int | None
 
-    print("Старый стиль:")
+    print("Old style:")
     print("  api_key: str = Field(default=None)")
-    print("  ❌ Противоречит типу (str не может быть None)")
-    print("  ❌ Требует type: ignore")
+    print("  ❌ Contradicts type (str cannot be None)")
+    print("  ❌ Requires type: ignore")
 
-    print("\nНовый стиль:")
+    print("\nNew style:")
     print("  api_key: Optional[str]")
-    print("  ✅ Семантически корректно")
-    print("  ✅ IDE и mypy понимают тип")
-    print("  ✅ Явно показывает намерение")
+    print("  ✅ Semantically correct")
+    print("  ✅ IDE and mypy understand type")
+    print("  ✅ Explicitly shows intention")
 
 
 if __name__ == "__main__":

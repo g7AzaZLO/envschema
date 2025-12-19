@@ -1,4 +1,4 @@
-"""Тесты для поддержки Optional типов."""
+"""Tests for Optional types support."""
 
 from typing import Optional, Union
 
@@ -12,7 +12,7 @@ from envschema.casters import (
 
 
 def test_is_optional_type() -> None:
-    """Тест определения Optional типов."""
+    """Test Optional types detection."""
     assert is_optional_type(Optional[str]) is True  # noqa: UP045
     assert is_optional_type(Union[str, None]) is True  # noqa: UP007
     assert is_optional_type(str | None) is True
@@ -23,7 +23,7 @@ def test_is_optional_type() -> None:
 
 
 def test_get_optional_inner_type() -> None:
-    """Тест извлечения внутреннего типа из Optional."""
+    """Test extracting inner type from Optional."""
     assert get_optional_inner_type(Optional[str]) is str  # noqa: UP045
     assert get_optional_inner_type(Union[int, None]) is int  # noqa: UP007
     assert get_optional_inner_type(str | None) is str
@@ -33,7 +33,7 @@ def test_get_optional_inner_type() -> None:
 
 
 def test_optional_field_missing() -> None:
-    """Тест отсутствующего Optional поля."""
+    """Test missing Optional field."""
 
     class Settings(EnvSchema):
         required_field: str
@@ -48,7 +48,7 @@ def test_optional_field_missing() -> None:
 
 
 def test_optional_field_present() -> None:
-    """Тест Optional поля с значением."""
+    """Test Optional field with value."""
 
     class Settings(EnvSchema):
         optional_field: str | None
@@ -61,108 +61,96 @@ def test_optional_field_present() -> None:
 
 
 def test_optional_int() -> None:
-    """Тест Optional[int]."""
+    """Test Optional[int]."""
 
     class Settings(EnvSchema):
         port: int | None
 
-    # С значением
     settings1 = Settings.load(env={"PORT": "8080"})
     assert settings1.port == 8080
 
-    # Без значения
     settings2 = Settings.load(env={})
     assert settings2.port is None
 
 
 def test_optional_bool() -> None:
-    """Тест Optional[bool]."""
+    """Test Optional[bool]."""
 
     class Settings(EnvSchema):
         debug: bool | None
 
-    # С значением
     settings1 = Settings.load(env={"DEBUG": "true"})
     assert settings1.debug is True
 
-    # Без значения
     settings2 = Settings.load(env={})
     assert settings2.debug is None
 
 
 def test_optional_float() -> None:
-    """Тест Optional[float]."""
+    """Test Optional[float]."""
 
     class Settings(EnvSchema):
         threshold: float | None
 
-    # С значением
     settings1 = Settings.load(env={"THRESHOLD": "0.95"})
     assert settings1.threshold == 0.95
 
-    # Без значения
     settings2 = Settings.load(env={})
     assert settings2.threshold is None
 
 
 def test_optional_with_default() -> None:
-    """Тест Optional поля с явным дефолтом."""
+    """Test Optional field with explicit default."""
 
     class Settings(EnvSchema):
         api_key: str | None = None
         timeout: int | None = 30
 
-    # Без значений - используются дефолты
     settings1 = Settings.load(env={})
     assert settings1.api_key is None
     assert settings1.timeout == 30
 
-    # С значениями - перезаписываются
     settings2 = Settings.load(env={"API_KEY": "secret", "TIMEOUT": "60"})
     assert settings2.api_key == "secret"
     assert settings2.timeout == 60
 
 
 def test_optional_vs_required() -> None:
-    """Тест разницы между Optional и обязательными полями."""
+    """Test difference between Optional and required fields."""
 
     class Settings(EnvSchema):
         required: str
         optional: str | None
 
-    # Обязательное поле отсутствует
     with pytest.raises(EnvSchemaError) as exc_info:
         Settings.load(env={})
 
     assert len(exc_info.value.errors) == 1
     assert exc_info.value.errors[0].env_var == "REQUIRED"
 
-    # Optional поле может отсутствовать
     settings = Settings.load(env={"REQUIRED": "value"})
     assert settings.required == "value"
     assert settings.optional is None
 
 
 def test_optional_field_descriptor() -> None:
-    """Тест Optional с Field дескриптором."""
+    """Test Optional with Field descriptor."""
 
     class Settings(EnvSchema):
         api_key: str | None = Field(description="API key")
         timeout: int | None = Field(default=30, description="Request timeout")
 
-    # Без значений
     settings1 = Settings.load(env={})
     assert settings1.api_key is None
     assert settings1.timeout == 30
 
-    # С значениями
     settings2 = Settings.load(env={"API_KEY": "secret", "TIMEOUT": "60"})
     assert settings2.api_key == "secret"
     assert settings2.timeout == 60
 
 
 def test_union_syntax() -> None:
-    """Тест Union[T, None] синтаксиса."""
+    """Test Union[T, None] syntax."""
 
     class Settings(EnvSchema):
         field1: str | None
@@ -177,7 +165,7 @@ def test_union_syntax() -> None:
 
 
 def test_optional_invalid_value() -> None:
-    """Тест невалидного значения для Optional поля."""
+    """Test invalid value for Optional field."""
 
     class Settings(EnvSchema):
         port: int | None
@@ -192,7 +180,7 @@ def test_optional_invalid_value() -> None:
 
 
 def test_multiple_optional_fields() -> None:
-    """Тест нескольких Optional полей."""
+    """Test multiple Optional fields."""
 
     class Settings(EnvSchema):
         database_url: str
@@ -214,22 +202,20 @@ def test_multiple_optional_fields() -> None:
 
 
 def test_optional_custom_env_name() -> None:
-    """Тест Optional с кастомным именем переменной."""
+    """Test Optional with custom variable name."""
 
     class Settings(EnvSchema):
         api_key: str | None = Field(env="SECRET_KEY")
 
-    # Без значения
     settings1 = Settings.load(env={})
     assert settings1.api_key is None
 
-    # С значением
     settings2 = Settings.load(env={"SECRET_KEY": "secret123"})
     assert settings2.api_key == "secret123"
 
 
 def test_optional_with_prefix() -> None:
-    """Тест Optional полей с префиксом."""
+    """Test Optional fields with prefix."""
 
     class Settings(EnvSchema):
         api_key: str | None
@@ -244,7 +230,7 @@ def test_optional_with_prefix() -> None:
 
 
 def test_optional_repr() -> None:
-    """Тест строкового представления с Optional полями."""
+    """Test string representation with Optional fields."""
 
     class Settings(EnvSchema):
         required: str
@@ -258,22 +244,17 @@ def test_optional_repr() -> None:
 
 
 def test_optional_mixed_with_defaults() -> None:
-    """Тест смешанных Optional полей и дефолтов."""
+    """Test mixed Optional fields and defaults."""
 
     class Settings(EnvSchema):
-        # Обязательное поле
         app_name: str
 
-        # Поле с дефолтом (не Optional)
         debug: bool = False
 
-        # Optional без дефолта
         api_key: str | None
 
-        # Optional с явным дефолтом None
         cache_url: str | None = None
 
-        # Optional с не-None дефолтом
         timeout: int | None = 30
 
     env = {"APP_NAME": "MyApp"}
@@ -288,7 +269,7 @@ def test_optional_mixed_with_defaults() -> None:
 
 
 def test_optional_in_nested_schema() -> None:
-    """Тест Optional полей во вложенных схемах."""
+    """Test Optional fields in nested schemas."""
 
     class DatabaseSettings(EnvSchema):
         host: str
@@ -311,18 +292,16 @@ def test_optional_in_nested_schema() -> None:
 
 
 def test_optional_list() -> None:
-    """Тест Optional[list[T]]."""
+    """Test Optional[list[T]]."""
 
     class Settings(EnvSchema):
         tags: list[str] | None
         ports: list[int] | None
 
-    # Без значений
     settings1 = Settings.load(env={})
     assert settings1.tags is None
     assert settings1.ports is None
 
-    # С значениями
     settings2 = Settings.load(
         env={"TAGS": "tag1,tag2,tag3", "PORTS": "[8080, 8081, 8082]"}
     )
@@ -331,47 +310,40 @@ def test_optional_list() -> None:
 
 
 def test_optional_dict() -> None:
-    """Тест Optional[dict]."""
+    """Test Optional[dict]."""
 
     class Settings(EnvSchema):
         metadata: dict | None
 
-    # Без значения
     settings1 = Settings.load(env={})
     assert settings1.metadata is None
 
-    # С значением
     settings2 = Settings.load(env={"METADATA": '{"key": "value", "count": 42}'})
     assert settings2.metadata == {"key": "value", "count": 42}
 
 
 def test_optional_empty_string() -> None:
-    """Тест обработки пустой строки для Optional полей."""
+    """Test handling empty string for Optional fields."""
 
     class Settings(EnvSchema):
         optional_str: str | None
 
-    # Пустая строка должна кастоваться в пустую строку, а не None
     settings = Settings.load(env={"OPTIONAL_STR": ""})
     assert settings.optional_str == ""
 
 
 def test_optional_semantic_difference() -> None:
-    """Тест семантической разницы между Optional и дефолтом."""
+    """Test semantic difference between Optional and default."""
 
     class Settings(EnvSchema):
-        # Optional: может отсутствовать (None если нет)
         api_key: str | None
 
-        # Дефолт: всегда имеет значение
         timeout: int = 30
 
     env = {}
 
     settings = Settings.load(env=env)
 
-    # Optional возвращает None
     assert settings.api_key is None
 
-    # Дефолт возвращает значение по умолчанию
     assert settings.timeout == 30

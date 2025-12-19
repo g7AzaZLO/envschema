@@ -2,7 +2,7 @@ from envschema import EnvSchema, Field
 
 
 class Settings(EnvSchema):
-    """Пример с кастомными именами переменных окружения."""
+    """Example with custom environment variable names."""
 
     database_url: str = Field(env="DATABASE_URL")
     secret_key: str = Field(env="SECRET_KEY")

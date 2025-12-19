@@ -1,9 +1,9 @@
-"""envschema - минималистичная библиотека для работы с переменными окружения.
+"""envschema - minimalistic library for working with environment variables.
 
-Типобезопасная загрузка, кастинг и валидация environment variables
-на основе аннотаций типов.
+Type-safe loading, casting and validation of environment variables
+based on type annotations.
 
-Пример использования:
+Usage example:
     >>> from envschema import EnvSchema, Field
     >>>
     >>> class Settings(EnvSchema):

@@ -1,1 +1,1 @@
-"""Тесты для envschema."""
+"""Tests for envschema."""

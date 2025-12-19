@@ -3,20 +3,20 @@ from pathlib import Path
 
 
 def load_dotenv(dotenv_path: str | Path | bool) -> dict[str, str]:
-    """Загружает переменные из .env файла.
+    """Loads variables from .env file.
 
-    При dotenv_path=True выполняет рекурсивный поиск .env файла вверх
-    по дереву каталогов от текущей рабочей директории до корня проекта.
+    When dotenv_path=True, performs recursive search for .env file upward
+    through directory tree from current working directory to project root.
 
     Args:
-        dotenv_path: Путь к .env файлу, True для автопоиска, или False
+        dotenv_path: Path to .env file, True for auto-search, or False
 
     Returns:
-        Словарь переменных окружения из файла
+        Dictionary of environment variables from file
 
     Raises:
-        ImportError: Если python-dotenv не установлен
-        FileNotFoundError: Если указанный файл не существует
+        ImportError: If python-dotenv is not installed
+        FileNotFoundError: If specified file does not exist
     """
     try:
         from dotenv import dotenv_values  # type: ignore[import-not-found]
@@ -54,17 +54,17 @@ def merge_env_sources(
     dotenv_vars: dict[str, str],
     system_env: dict[str, str] | None = None,
 ) -> dict[str, str]:
-    """Объединяет переменные из .env и системного окружения.
+    """Merges variables from .env and system environment.
 
-    Приоритет: system_env > dotenv_vars
-    (системные переменные перезаписывают значения из .env)
+    Priority: system_env > dotenv_vars
+    (system variables override values from .env)
 
     Args:
-        dotenv_vars: Переменные из .env файла
-        system_env: Системные переменные окружения (по умолчанию os.environ)
+        dotenv_vars: Variables from .env file
+        system_env: System environment variables (default: os.environ)
 
     Returns:
-        Объединенный словарь переменных
+        Merged dictionary of variables
     """
     if system_env is None:
         system_env = dict(os.environ)
@@ -80,19 +80,19 @@ def load_env_with_dotenv(
     dotenv_path: str | Path | bool | None = None,
     override: bool = False,
 ) -> dict[str, str]:
-    """Загружает переменные окружения с поддержкой .env файлов.
+    """Loads environment variables with .env file support.
 
     Args:
-        dotenv_path: Путь к .env файлу, True для автопоиска, None для игнора
-        override: Если True, .env перезаписывает системные переменные
+        dotenv_path: Path to .env file, True for auto-search, None to ignore
+        override: If True, .env overrides system variables
 
     Returns:
-        Словарь переменных окружения
+        Dictionary of environment variables
 
     Example:
         >>> env = load_env_with_dotenv(".env")
-        >>> env = load_env_with_dotenv(True)  # Автопоиск .env
-        >>> env = load_env_with_dotenv()  # Только os.environ
+        >>> env = load_env_with_dotenv(True)  # Auto-search .env
+        >>> env = load_env_with_dotenv()  # Only os.environ
     """
     if dotenv_path is None:
         return dict(os.environ)

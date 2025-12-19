@@ -7,28 +7,28 @@ CasterFunc = Callable[[str], Any]
 
 
 def cast_str(value: str) -> str:
-    """Кастит значение в строку.
+    """Casts value to string.
 
     Args:
-        value: Строковое значение из окружения
+        value: String value from environment
 
     Returns:
-        Исходная строка без изменений
+        Original string unchanged
     """
     return value
 
 
 def cast_int(value: str) -> int:
-    """Кастит значение в целое число.
+    """Casts value to integer.
 
     Args:
-        value: Строковое значение из окружения
+        value: String value from environment
 
     Returns:
-        Целое число
+        Integer value
 
     Raises:
-        ValueError: Если значение невозможно преобразовать в int
+        ValueError: If value cannot be converted to int
     """
     try:
         return int(value)
@@ -37,16 +37,16 @@ def cast_int(value: str) -> int:
 
 
 def cast_float(value: str) -> float:
-    """Кастит значение в число с плавающей точкой.
+    """Casts value to float.
 
     Args:
-        value: Строковое значение из окружения
+        value: String value from environment
 
     Returns:
-        Число с плавающей точкой
+        Float value
 
     Raises:
-        ValueError: Если значение невозможно преобразовать в float
+        ValueError: If value cannot be converted to float
     """
     try:
         return float(value)
@@ -55,20 +55,20 @@ def cast_float(value: str) -> float:
 
 
 def cast_bool(value: str) -> bool:
-    """Кастит значение в булево значение.
+    """Casts value to boolean.
 
-    Поддерживаемые значения:
-    - True: "true", "yes", "1", "on" (регистронезависимо)
-    - False: "false", "no", "0", "off" (регистронезависимо)
+    Supported values:
+    - True: "true", "yes", "1", "on" (case-insensitive)
+    - False: "false", "no", "0", "off" (case-insensitive)
 
     Args:
-        value: Строковое значение из окружения
+        value: String value from environment
 
     Returns:
-        Булево значение
+        Boolean value
 
     Raises:
-        ValueError: Если значение не распознано как bool
+        ValueError: If value is not recognized as bool
     """
     normalized = value.lower().strip()
 
@@ -83,32 +83,30 @@ def cast_bool(value: str) -> bool:
 
 
 def cast_list(value: str, item_type: type = str) -> list:
-    """Кастит значение в список.
+    """Casts value to list.
 
-    Автоматически определяет формат:
-    - Если строка выглядит как JSON массив → парсит как JSON
-    - Иначе → парсит как CSV (разделитель: запятая)
+    Automatically detects format:
+    - If string looks like JSON array → parses as JSON
+    - Otherwise → parses as CSV (separator: comma)
 
     Args:
-        value: Строковое значение из окружения
-        item_type: Тип элементов списка (по умолчанию str)
+        value: String value from environment
+        item_type: Type of list items (default: str)
 
     Returns:
-        Список элементов указанного типа
+        List of items of specified type
 
     Raises:
-        ValueError: Если значение невозможно распарсить
+        ValueError: If value cannot be parsed
     """
     stripped = value.strip()
 
-    # Проверяем, выглядит ли как JSON массив
     if stripped.startswith("[") and stripped.endswith("]"):
         try:
             parsed = json.loads(stripped)
             if not isinstance(parsed, list):
                 raise ValueError(f"expected JSON array, got {type(parsed)}")
 
-            # Кастим элементы в нужный тип
             if item_type is not str:
                 caster = _get_caster_for_type(item_type)
                 return [caster(str(item)) for item in parsed]
@@ -117,13 +115,11 @@ def cast_list(value: str, item_type: type = str) -> list:
         except json.JSONDecodeError as e:
             raise ValueError(f"invalid JSON array: {e}") from e
 
-    # Парсим как CSV
     if not stripped:
         return []
 
     items = [item.strip() for item in stripped.split(",")]
 
-    # Кастим элементы в нужный тип
     if item_type is not str:
         caster = _get_caster_for_type(item_type)
         try:
@@ -137,16 +133,16 @@ def cast_list(value: str, item_type: type = str) -> list:
 
 
 def cast_dict(value: str) -> dict:
-    """Кастит значение в словарь через JSON.
+    """Casts value to dictionary via JSON.
 
     Args:
-        value: Строковое значение из окружения (JSON формат)
+        value: String value from environment (JSON format)
 
     Returns:
-        Словарь
+        Dictionary
 
     Raises:
-        ValueError: Если значение невозможно распарсить как JSON объект
+        ValueError: If value cannot be parsed as JSON object
     """
     try:
         parsed = json.loads(value)
@@ -157,7 +153,6 @@ def cast_dict(value: str) -> dict:
         raise ValueError(f"invalid JSON object: {e}") from e
 
 
-# Реестр кастеров для базовых типов
 _CASTERS: dict[type, CasterFunc] = {
     str: cast_str,
     int: cast_int,
@@ -168,11 +163,11 @@ _CASTERS: dict[type, CasterFunc] = {
 
 
 def register_caster(type_: type, caster: CasterFunc) -> None:
-    """Регистрирует кастомный кастер для типа.
+    """Registers custom caster for type.
 
     Args:
-        type_: Тип данных
-        caster: Функция кастинга (str -> type_)
+        type_: Data type
+        caster: Casting function (str -> type_)
 
     Example:
         >>> def cast_timedelta(value: str) -> timedelta:
@@ -183,16 +178,16 @@ def register_caster(type_: type, caster: CasterFunc) -> None:
 
 
 def _get_caster_for_type(type_: type) -> CasterFunc:
-    """Получает функцию кастинга для типа.
+    """Gets casting function for type.
 
     Args:
-        type_: Тип данных
+        type_: Data type
 
     Returns:
-        Функция кастинга
+        Casting function
 
     Raises:
-        ValueError: Если кастер для типа не найден
+        ValueError: If caster for type is not found
     """
     if type_ in _CASTERS:
         return _CASTERS[type_]
@@ -201,25 +196,20 @@ def _get_caster_for_type(type_: type) -> CasterFunc:
 
 
 def is_optional_type(type_: type) -> bool:
-    """Проверяет, является ли тип Optional[T] или Union[T, None].
+    """Checks if type is Optional[T] or Union[T, None].
 
     Args:
-        type_: Тип для проверки
+        type_: Type to check
 
     Returns:
-        True если тип является Optional[T] или Union[T, None]
+        True if type is Optional[T] or Union[T, None]
     """
     origin = get_origin(type_)
 
-    # Проверяем, является ли origin Union-типом
-    # В Python 3.10+ это types.UnionType для X | Y синтаксиса
-    # или typing.Union для Union[X, Y]
     if origin is Union:
         args = get_args(type_)
-        # Union должен содержать ровно 2 аргумента, один из которых NoneType
         return len(args) == 2 and type(None) in args
 
-    # Проверяем новый синтаксис Python 3.10+ (X | Y)
     try:
         import types
 
@@ -233,49 +223,45 @@ def is_optional_type(type_: type) -> bool:
 
 
 def get_optional_inner_type(type_: type) -> type:
-    """Извлекает внутренний тип T из Optional[T].
+    """Extracts inner type T from Optional[T].
 
     Args:
-        type_: Optional тип
+        type_: Optional type
 
     Returns:
-        Внутренний тип T
+        Inner type T
 
     Raises:
-        ValueError: Если тип не является Optional
+        ValueError: If type is not Optional
     """
     if not is_optional_type(type_):
         raise ValueError(f"type {type_} is not Optional")
 
     args = get_args(type_)
 
-    # Возвращаем тип, который не NoneType
     for arg in args:
         if arg is not type(None):
-            # Явно приводим к type, так как get_args может вернуть Any
             return cast(type, arg)
 
     raise ValueError(f"cannot extract inner type from {type_}")
 
 
 def _get_type_name(type_: type) -> str:
-    """Безопасно получает имя типа для отображения.
+    """Safely gets type name for display.
 
-    Обрабатывает все случаи, включая UnionType, Optional, list[T] и т.д.
+    Handles all cases including UnionType, Optional, list[T], etc.
 
     Args:
-        type_: Тип данных
+        type_: Data type
 
     Returns:
-        Строковое представление имени типа
+        String representation of type name
     """
-    # Для Optional[T] показываем как Optional[inner_type]
     if is_optional_type(type_):
         inner_type = get_optional_inner_type(type_)
         inner_name = _get_type_name(inner_type)
         return f"Optional[{inner_name}]"
 
-    # Для list[T] показываем как list[item_type]
     origin = get_origin(type_)
     if origin is list:
         args = get_args(type_)
@@ -283,38 +269,34 @@ def _get_type_name(type_: type) -> str:
         item_name = _get_type_name(item_type)
         return f"list[{item_name}]"
 
-    # Для обычных типов используем __name__ или str()
     return getattr(type_, "__name__", str(type_))
 
 
 def cast_value(value: str, type_: type) -> Any:
-    """Кастит значение в указанный тип.
+    """Casts value to specified type.
 
-    Поддерживает базовые типы, list[T] и Optional[T].
+    Supports basic types, list[T] and Optional[T].
 
     Args:
-        value: Строковое значение из окружения
-        type_: Целевой тип данных
+        value: String value from environment
+        type_: Target data type
 
     Returns:
-        Значение указанного типа
+        Value of specified type
 
     Raises:
-        ValueError: Если кастинг невозможен
+        ValueError: If casting is impossible
     """
-    # Обработка Optional[T] - должна быть первой
     if is_optional_type(type_):
         inner_type = get_optional_inner_type(type_)
         return cast_value(value, inner_type)
 
     origin = get_origin(type_)
 
-    # Обработка list[T]
     if origin is list:
         args = get_args(type_)
         item_type = args[0] if args else str
         return cast_list(value, item_type)
 
-    # Обработка базовых типов
     caster = _get_caster_for_type(type_)
     return caster(value)

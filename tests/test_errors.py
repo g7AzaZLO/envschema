@@ -2,10 +2,10 @@ from envschema.errors import EnvSchemaError, ValidationError
 
 
 class TestValidationError:
-    """Тесты для ValidationError."""
+    """Tests for ValidationError."""
 
     def test_initialization(self) -> None:
-        """Проверяет инициализацию ошибки валидации."""
+        """Checks validation error initialization."""
         error = ValidationError(
             field_name="port",
             env_var="PORT",
@@ -22,7 +22,7 @@ class TestValidationError:
         assert str(error) == "invalid value"
 
     def test_format(self) -> None:
-        """Проверяет форматирование ошибки."""
+        """Checks error formatting."""
         error = ValidationError(
             field_name="port",
             env_var="PORT",
@@ -38,7 +38,7 @@ class TestValidationError:
         assert "abc" in formatted
 
     def test_format_without_value(self) -> None:
-        """Проверяет форматирование без значения."""
+        """Checks formatting without value."""
         error = ValidationError(
             field_name="port",
             env_var="PORT",
@@ -52,7 +52,7 @@ class TestValidationError:
         assert "abc" not in formatted
 
     def test_repr(self) -> None:
-        """Проверяет строковое представление."""
+        """Checks string representation."""
         error = ValidationError(
             field_name="port",
             env_var="PORT",
@@ -66,10 +66,10 @@ class TestValidationError:
 
 
 class TestEnvSchemaError:
-    """Тесты для EnvSchemaError."""
+    """Tests for EnvSchemaError."""
 
     def test_single_error(self) -> None:
-        """Проверяет исключение с одной ошибкой."""
+        """Checks exception with single error."""
         validation_error = ValidationError(
             field_name="port",
             env_var="PORT",
@@ -85,7 +85,7 @@ class TestEnvSchemaError:
         assert "PORT" in message
 
     def test_multiple_errors(self) -> None:
-        """Проверяет исключение с несколькими ошибками."""
+        """Checks exception with multiple errors."""
         error1 = ValidationError(
             field_name="port",
             env_var="PORT",
@@ -106,13 +106,13 @@ class TestEnvSchemaError:
         assert "HOST" in message
 
     def test_empty_errors(self) -> None:
-        """Проверяет исключение без ошибок."""
+        """Checks exception without errors."""
         error = EnvSchemaError([])
         assert len(error.errors) == 0
         assert "Unknown environment schema error" in str(error)
 
     def test_repr(self) -> None:
-        """Проверяет строковое представление."""
+        """Checks string representation."""
         validation_error = ValidationError(
             field_name="port",
             env_var="PORT",

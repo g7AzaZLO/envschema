@@ -2,7 +2,7 @@ from envschema import EnvSchema
 
 
 class Settings(EnvSchema):
-    """Пример сложных типов."""
+    """Example of complex types."""
 
     allowed_hosts: list[str]
     retry_delays: list[int]

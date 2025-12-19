@@ -1,5 +1,3 @@
-"""Тесты для модуля loader.py."""
-
 import os
 import sys
 import tempfile
@@ -17,7 +15,7 @@ from envschema.loader import (
 
 @pytest.fixture(autouse=True)
 def mock_dotenv() -> None:
-    """Мокает модуль dotenv для всех тестов."""
+    """Mocks dotenv module for all tests."""
     mock_dotenv_module = MagicMock()
     mock_dotenv_module.dotenv_values = MagicMock()
     mock_dotenv_module.find_dotenv = MagicMock()
@@ -27,10 +25,10 @@ def mock_dotenv() -> None:
 
 
 class TestLoadDotenv:
-    """Тесты для функции load_dotenv."""
+    """Tests for load_dotenv function."""
 
     def test_load_dotenv_with_string_path(self) -> None:
-        """Проверяет загрузку .env файла по строковому пути."""
+        """Checks loading .env file by string path."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
             f.write("KEY1=value1\nKEY2=value2\nKEY3=value3\n")
             temp_path = f.name
@@ -53,7 +51,7 @@ class TestLoadDotenv:
             os.unlink(temp_path)
 
     def test_load_dotenv_with_path_object(self) -> None:
-        """Проверяет загрузку .env файла по объекту Path."""
+        """Checks loading .env file by Path object."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
             f.write("TEST_KEY=test_value\n")
             temp_path = Path(f.name)
@@ -70,7 +68,7 @@ class TestLoadDotenv:
             os.unlink(str(temp_path))
 
     def test_load_dotenv_with_bool_true(self, tmp_path: Path) -> None:
-        """Проверяет автопоиск .env файла при dotenv_path=True."""
+        """Checks auto-search of .env file when dotenv_path=True."""
         env_file = tmp_path / ".env"
         env_file.write_text("AUTO_KEY=auto_value\n")
         sys.modules["dotenv"].find_dotenv.return_value = str(env_file)
@@ -81,8 +79,7 @@ class TestLoadDotenv:
         sys.modules["dotenv"].find_dotenv.assert_called_once_with(usecwd=True)
 
     def test_load_dotenv_with_bool_true_not_found(self) -> None:
-        """Проверяет ошибку при автопоиске, если файл не найден."""
-        # Мокаем find_dotenv для возврата пустой строки (файл не найден)
+        """Checks error on auto-search if file not found."""
         sys.modules["dotenv"].find_dotenv.return_value = ""
 
         with pytest.raises(FileNotFoundError) as exc_info:
@@ -93,12 +90,12 @@ class TestLoadDotenv:
         )
 
     def test_load_dotenv_with_bool_false(self) -> None:
-        """Проверяет возврат пустого словаря при dotenv_path=False."""
+        """Checks returning empty dict when dotenv_path=False."""
         result = load_dotenv(False)
         assert result == {}
 
     def test_load_dotenv_filters_none_values(self) -> None:
-        """Проверяет фильтрацию None значений из .env файла."""
+        """Checks filtering None values from .env file."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
             f.write("KEY1=value1\nKEY2=\nKEY3=value3\n")
             temp_path = f.name
@@ -120,7 +117,7 @@ class TestLoadDotenv:
             os.unlink(temp_path)
 
     def test_load_dotenv_file_not_found(self) -> None:
-        """Проверяет ошибку при отсутствии .env файла."""
+        """Checks error when .env file is missing."""
         non_existent = Path("/non/existent/path/.env")
 
         with pytest.raises(FileNotFoundError) as exc_info:
@@ -130,12 +127,11 @@ class TestLoadDotenv:
         assert str(non_existent) in str(exc_info.value)
 
     def test_load_dotenv_import_error(self) -> None:
-        """Проверяет ошибку при отсутствии python-dotenv."""
+        """Checks error when python-dotenv is missing."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
             temp_path = f.name
 
         try:
-            # Временно удаляем мок dotenv для этого теста
             with patch.dict("sys.modules", {"dotenv": None}):
                 with pytest.raises(ImportError) as exc_info:
                     load_dotenv(temp_path)
@@ -148,10 +144,10 @@ class TestLoadDotenv:
 
 
 class TestMergeEnvSources:
-    """Тесты для функции merge_env_sources."""
+    """Tests for merge_env_sources function."""
 
     def test_merge_basic(self) -> None:
-        """Проверяет базовое объединение переменных."""
+        """Checks basic merging of variables."""
         dotenv_vars = {"KEY1": "dotenv_value1", "KEY2": "dotenv_value2"}
         system_env = {"KEY2": "system_value2", "KEY3": "system_value3"}
 
@@ -162,7 +158,7 @@ class TestMergeEnvSources:
         assert result["KEY3"] == "system_value3"
 
     def test_merge_system_env_priority(self) -> None:
-        """Проверяет приоритет system_env над dotenv_vars."""
+        """Checks system_env priority over dotenv_vars."""
         dotenv_vars = {"CONFLICT_KEY": "dotenv_value"}
         system_env = {"CONFLICT_KEY": "system_value"}
 
@@ -171,7 +167,7 @@ class TestMergeEnvSources:
         assert result["CONFLICT_KEY"] == "system_value"
 
     def test_merge_with_none_system_env(self) -> None:
-        """Проверяет использование os.environ при system_env=None."""
+        """Checks using os.environ when system_env=None."""
         dotenv_vars = {"DOTENV_KEY": "dotenv_value"}
 
         original_env = dict(os.environ)
@@ -190,7 +186,7 @@ class TestMergeEnvSources:
             os.environ.update(original_env)
 
     def test_merge_empty_dotenv(self) -> None:
-        """Проверяет объединение с пустым dotenv_vars."""
+        """Checks merging with empty dotenv_vars."""
         system_env = {"KEY1": "value1", "KEY2": "value2"}
 
         result = merge_env_sources({}, system_env)
@@ -198,7 +194,7 @@ class TestMergeEnvSources:
         assert result == system_env
 
     def test_merge_empty_system_env(self) -> None:
-        """Проверяет объединение с пустым system_env."""
+        """Checks merging with empty system_env."""
         dotenv_vars = {"KEY1": "value1", "KEY2": "value2"}
 
         result = merge_env_sources(dotenv_vars, {})
@@ -206,17 +202,17 @@ class TestMergeEnvSources:
         assert result == dotenv_vars
 
     def test_merge_both_empty(self) -> None:
-        """Проверяет объединение двух пустых словарей."""
+        """Checks merging two empty dictionaries."""
         result = merge_env_sources({}, {})
 
         assert result == {}
 
 
 class TestLoadEnvWithDotenv:
-    """Тесты для функции load_env_with_dotenv."""
+    """Tests for load_env_with_dotenv function."""
 
     def test_load_with_none_dotenv_path(self) -> None:
-        """Проверяет загрузку только os.environ при dotenv_path=None."""
+        """Checks loading only os.environ when dotenv_path=None."""
         original_env = dict(os.environ)
 
         try:
@@ -232,7 +228,7 @@ class TestLoadEnvWithDotenv:
             os.environ.update(original_env)
 
     def test_load_with_string_path(self) -> None:
-        """Проверяет загрузку с указанием строкового пути."""
+        """Checks loading with string path specified."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
             f.write("DOTENV_KEY=dotenv_value\n")
             temp_path = f.name
@@ -258,7 +254,7 @@ class TestLoadEnvWithDotenv:
             os.environ.update(original_env)
 
     def test_load_with_path_object(self) -> None:
-        """Проверяет загрузку с указанием объекта Path."""
+        """Checks loading with Path object specified."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
             f.write("PATH_KEY=path_value\n")
             temp_path = Path(f.name)
@@ -280,7 +276,7 @@ class TestLoadEnvWithDotenv:
             os.environ.update(original_env)
 
     def test_load_with_bool_true(self, tmp_path: Path) -> None:
-        """Проверяет автопоиск .env файла при dotenv_path=True."""
+        """Checks auto-search of .env file when dotenv_path=True."""
         env_file = tmp_path / ".env"
         env_file.write_text("AUTO_KEY=auto_value\n")
 
@@ -302,7 +298,7 @@ class TestLoadEnvWithDotenv:
             os.environ.update(original_env)
 
     def test_load_with_override_false(self) -> None:
-        """Проверяет режим override=False (system_env имеет приоритет)."""
+        """Checks override=False mode (system_env has priority)."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
             f.write("CONFLICT_KEY=dotenv_value\n")
             temp_path = f.name
@@ -326,7 +322,7 @@ class TestLoadEnvWithDotenv:
             os.environ.update(original_env)
 
     def test_load_with_override_true(self) -> None:
-        """Проверяет режим override=True (dotenv перезаписывает system)."""
+        """Checks override=True mode (dotenv overrides system)."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
             f.write("CONFLICT_KEY=dotenv_value\n")
             temp_path = f.name
@@ -352,7 +348,7 @@ class TestLoadEnvWithDotenv:
             os.environ.update(original_env)
 
     def test_load_file_not_found(self) -> None:
-        """Проверяет ошибку при отсутствии .env файла."""
+        """Checks error when .env file is missing."""
         non_existent = Path("/non/existent/path/.env")
 
         with pytest.raises(FileNotFoundError):

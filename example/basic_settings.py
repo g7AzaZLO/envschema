@@ -2,7 +2,7 @@ from envschema import EnvSchema, Field
 
 
 class Settings(EnvSchema):
-    """Простейшая схема настроек приложения."""
+    """Simplest application settings schema."""
 
     host: str = "localhost"
     port: int
